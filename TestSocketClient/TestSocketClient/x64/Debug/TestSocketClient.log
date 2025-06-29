@@ -1,0 +1,10 @@
+﻿  TestSocketClient.cpp
+C:\Users\Viktoria\Desktop\practice\protocol.h(36,54): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
+  (компиляция исходного файла "TestSocketClient.cpp")
+  
+C:\Users\Viktoria\Desktop\practice\protocol.h(63,50): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
+  (компиляция исходного файла "TestSocketClient.cpp")
+  
+  TestSocketClient.vcxproj -> C:\Users\Viktoria\Desktop\practice\TestSocketClient\x64\Debug\TestSocketClient.exe
+  "pwsh.exe" не является внутренней или внешней
+  командой, исполняемой программой или пакетным файлом.
