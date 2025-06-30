@@ -1,4 +1,4 @@
-// protocol.h
+п»ї// protocol.h
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
 
@@ -6,18 +6,18 @@
 
 struct PersonData 
 {
-    char surname[64];      // Фамилия
-    char name[64];         // Имя
-    char patronymic[64];   // Отчество
-    uint8_t age;           // Возраст
-    uint16_t weight;       // Вес
+    char surname[64];      // С„Р°РјРёР»РёСЏ
+    char name[64];         // РёРјСЏ
+    char patronymic[64];   // РѕС‚С‡РµСЃС‚РІРѕ
+    uint8_t age;           // РІРѕР·СЂР°СЃС‚
+    uint16_t weight;       // РІРµСЃ
 };
 
-const uint8_t DELIMITER = 0xAA;      // Разделитель между полями
-const uint8_t PACKET_START = 0x55;   // Маркер начала пакета
-const uint8_t PACKET_END = 0xAA;     // Маркер конца пакета
+const uint8_t DELIMITER = 0xAA;      // СЂР°Р·РґРµР»РёС‚РµР»СЊ РјРµР¶РґСѓ РїРѕР»СЏРјРё
+const uint8_t PACKET_START = 0x55;   // РјР°СЂРєРµСЂ РЅР°С‡Р°Р»Р° РїР°РєРµС‚Р°
+const uint8_t PACKET_END = 0xAA;     // РјР°СЂРєРµСЂ РєРѕРЅС†Р° РїР°РєРµС‚Р°
 
-// Функция вычисления контрольной суммы
+// С„СѓРЅРєС†РёСЏ РІС‹С‡РёСЃР»РµРЅРёСЏ РєРѕРЅС‚СЂРѕР»СЊРЅРѕР№ СЃСѓРјРјС‹
 uint8_t calculateCRC(const void* data, size_t size) 
 {
     const uint8_t* bytes = static_cast<const uint8_t*>(data);
@@ -29,17 +29,17 @@ uint8_t calculateCRC(const void* data, size_t size)
     return crc;
 }
 
-// Отправка одного поля с контольной суммой и разделителем
+// РѕС‚РїСЂР°РІРєР° РѕРґРЅРѕРіРѕ РїРѕР»СЏ СЃ РєРѕРЅС‚РѕР»СЊРЅРѕР№ СЃСѓРјРјРѕР№ Рё СЂР°Р·РґРµР»РёС‚РµР»РµРј
 bool sendField(SOCKET socket, const void* data, size_t size)
 {
-    // Отправляем данные
+    // РѕС‚РїСЂР°РІР»СЏРµРј РґР°РЅРЅС‹Рµ
     if (send(socket, static_cast<const char*>(data), size, 0) != size) 
     {
         std::cerr << "Failed to send data" << std::endl;
         return false;
     }
 
-    // Отправляем CRC
+    // РѕС‚РїСЂР°РІР»СЏРµРј РєРѕРЅС‚СЂРѕР»СЊРЅСѓСЋ СЃСѓРјРјСѓ
     uint8_t crc = calculateCRC(data, size);
     if (send(socket, reinterpret_cast<const char*>(&crc), sizeof(crc), 0) != sizeof(crc)) 
     {
@@ -47,7 +47,7 @@ bool sendField(SOCKET socket, const void* data, size_t size)
         return false;
     }
 
-    // Отправляем разделитель
+    // РѕС‚РїСЂР°РІР»СЏРµРј СЂР°Р·РґРµР»РёС‚РµР»СЊ
     if (send(socket, reinterpret_cast<const char*>(&DELIMITER), sizeof(DELIMITER), 0) != sizeof(DELIMITER)) 
     {
         std::cerr << "Failed to send delimiter" << std::endl;
@@ -59,14 +59,14 @@ bool sendField(SOCKET socket, const void* data, size_t size)
 
 bool receiveField(SOCKET socket, void* buffer, size_t size) 
 {
-    // прием данных
+    // РїСЂРёРµРј РґР°РЅРЅС‹С…
     if (recv(socket, static_cast<char*>(buffer), size, 0) != size) 
     {
         std::cerr << "Failed to receive data" << std::endl;
         return false;
     }
 
-    // прием контрольной суммы
+    // РїСЂРёРµРј РєРѕРЅС‚СЂРѕР»СЊРЅРѕР№ СЃСѓРјРјС‹
     uint8_t receivedCRC;
     if (recv(socket, reinterpret_cast<char*>(&receivedCRC), sizeof(receivedCRC), 0) != sizeof(receivedCRC)) 
     {
@@ -74,7 +74,7 @@ bool receiveField(SOCKET socket, void* buffer, size_t size)
         return false;
     }
 
-    // проверка контрольной суммы
+    // РїСЂРѕРІРµСЂРєР° РєРѕРЅС‚СЂРѕР»СЊРЅРѕР№ СЃСѓРјРјС‹
     uint8_t calculatedCRC = calculateCRC(buffer, size);
     if (receivedCRC != calculatedCRC)
     {
@@ -82,7 +82,7 @@ bool receiveField(SOCKET socket, void* buffer, size_t size)
         return false;
     }
 
-    // проверка разделителя
+    // РїСЂРѕРІРµСЂРєР° СЂР°Р·РґРµР»РёС‚РµР»СЏ
     uint8_t delimiter;
     if (recv(socket, reinterpret_cast<char*>(&delimiter), sizeof(delimiter), 0) != sizeof(delimiter))
     {
