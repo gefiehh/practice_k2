@@ -76,6 +76,8 @@ int main()
         return 1;
     }
 
+    cout << "Server is runnung and expects connection..." << endl;
+
     ClientSocket = accept(ListenSocket, NULL, NULL);
     if (ClientSocket == INVALID_SOCKET)
     {
@@ -88,82 +90,25 @@ int main()
 
     closesocket(ListenSocket);
 
-    // получение данных
-    uint8_t startMarker;
-    if (recv(ClientSocket, reinterpret_cast<char*>(&startMarker), sizeof(startMarker), 0) != sizeof(startMarker))
+    while (true)
     {
-        std::cerr << "Failed to receive start marker" << std::endl;
-        closesocket(ClientSocket);
-        WSACleanup();
-        return 1;
-    }
+        PersonData person;
+        if (!receivePersonData(ClientSocket, person))
+        {
+            cerr << "Error when receiving data. Closing connection." << endl;
+            break;
+        }
 
-    if (startMarker != PACKET_START)
-    {
-        std::cerr << "Invalid start marker" << std::endl;
-        closesocket(ClientSocket);
-        WSACleanup();
-        return 1;
-    }
+        // вывод полученных данных
+        cout << "\nПолучена информация о человеке:" << endl;
+        cout << "Фамилия: " << person.surname << endl;
+        cout << "Имя: " << person.name << endl;
+        cout << "Отчество: " << person.patronymic << endl;
+        cout << "Возраст: " << static_cast<int>(person.age) << endl;
+        cout << "Вес: " << person.weight << endl;
 
-    PersonData person;
-    if (!receiveField(ClientSocket, person.surname, sizeof(person.surname)))
-    {
-        closesocket(ClientSocket);
-        WSACleanup();
-        return 1;
+        cout << "\nWaiting for the next package..." << endl;
     }
-
-    if (!receiveField(ClientSocket, person.name, sizeof(person.name)))
-    {
-        closesocket(ClientSocket);
-        WSACleanup();
-        return 1;
-    }
-
-    if (!receiveField(ClientSocket, person.patronymic, sizeof(person.patronymic)))
-    {
-        closesocket(ClientSocket);
-        WSACleanup();
-        return 1;
-    }
-
-    if (!receiveField(ClientSocket, &person.age, sizeof(person.age)))
-    {
-        closesocket(ClientSocket);
-        WSACleanup();
-        return 1;
-    }
-
-    if (!receiveField(ClientSocket, &person.weight, sizeof(person.weight)))
-    {
-        closesocket(ClientSocket);
-        WSACleanup();
-        return 1;
-    }
-
-    // проверка байта конца
-    uint8_t endMarker;
-    if (recv(ClientSocket, reinterpret_cast<char*>(&endMarker), sizeof(endMarker), 0) != sizeof(endMarker))
-    {
-        std::cerr << "Failed to receive end marker" << std::endl;
-        closesocket(ClientSocket);
-        WSACleanup();
-        return 1;
-    }
-
-    if (endMarker != PACKET_END)
-    {
-        std::cerr << "Invalid end marker" << std::endl;
-    }
-
-    // вывод полученных данных
-    std::cout << "Информация о человеке:" << std::endl;
-    std::cout << "Фамилия: " << person.surname << std::endl;
-    std::cout << "Имя: " << person.name << std::endl;
-    std::cout << "Отчество: " << person.patronymic << std::endl;
-    std::cout << "Возраст: " << static_cast<int>(person.age) << std::endl;
-    std::cout << "Вес: " << person.weight << std::endl;
 
     closesocket(ClientSocket);
     WSACleanup();

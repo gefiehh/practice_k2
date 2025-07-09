@@ -68,31 +68,47 @@ int main()
 		return 1;
 	}
 
-    // подготовка данных
-    PersonData person;
-    memset(&person, 0, sizeof(PersonData));
-    strncpy_s(person.surname, "Иванов", sizeof(person.surname));
-    strncpy_s(person.name, "Иван", sizeof(person.name));
-    strncpy_s(person.patronymic, "Иванович", sizeof(person.patronymic));
-    person.age = 30;
-    person.weight = 75;
+	// подготовка нескольких пакетов данных
+	PersonData persons[] = {
+		{"Иванов", "Иван", "Иванович", 30, 75},
+		{"Петров", "Петр", "Петрович", 25, 80}
+	};
+	const int personsCount = sizeof(persons) / sizeof(PersonData);
 
-    // отправка данных
-    // 1. байт начала пакета
-    send(ConnectSocket, reinterpret_cast<const char*>(&PACKET_START), sizeof(PACKET_START), 0);
+	// вывод меню
+	// обработка выбора
+	// отправка данных
+	while (true) {
+		cout << "Avaliable data packs:" << endl;
+		for (int i = 0; i < personsCount; i++) {
+			cout << i + 1 << ". " << persons[i].surname << " " << persons[i].name
+				<< " " << persons[i].patronymic << endl;
+		}
+		cout << "0. Выход" << endl;
+		cout << "Выберите пакет для отправки (0-" << personsCount << "): ";
 
-    // 2. отправка полей
-    sendField(ConnectSocket, person.surname, sizeof(person.surname));
-    sendField(ConnectSocket, person.name, sizeof(person.name));
-    sendField(ConnectSocket, person.patronymic, sizeof(person.patronymic));
-    sendField(ConnectSocket, &person.age, sizeof(person.age));
-    sendField(ConnectSocket, &person.weight, sizeof(person.weight));
+		int choice;
+		cin >> choice;
+		cin.ignore(); // очистка буфера ввода
 
-    // 3. байт конца пакета
-    send(ConnectSocket, reinterpret_cast<const char*>(&PACKET_END), sizeof(PACKET_END), 0);
+		if (choice == 0) break;
+		if (choice < 1 || choice > personsCount) {
+			cout << "Wrong choise" << endl;
+			continue;
+		}
+
+		// отправка выбранного пакета
+		sendPersonData(ConnectSocket, persons[choice - 1]);
+		cout << "Data packet sent" << endl;
+	}
 
     // завершение работы
     closesocket(ConnectSocket);
     WSACleanup();
     return 0;
 }
+
+
+// отправлять структуру целиком (отправляем в бинарном виде, получаем в виде структуры)
+// проверка если больше 64 байт или пустая строка
+// асинхронная работа сокетов + предача нескольких пакетов 

@@ -31,10 +31,9 @@
               "RelativeDocumentMoniker": "..\\protocol.h",
               "ToolTip": "C:\\Users\\Viktoria\\Desktop\\practice\\protocol.h",
               "RelativeToolTip": "..\\protocol.h",
-              "ViewState": "AgIAADAAAAAAAAAAAAAAAFQAAAAIAAAAAAAAAA==",
+              "ViewState": "AgIAADwAAAAAAAAAAAAAADEAAAATAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-06-28T21:48:56.988Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-28T21:48:56.988Z"
             },
             {
               "$type": "Document",
@@ -42,9 +41,9 @@
               "Title": "TestSocketServer.cpp",
               "DocumentMoniker": "C:\\Users\\Viktoria\\Desktop\\practice\\TestSocketServer\\TestSocketServer\\TestSocketServer.cpp",
               "RelativeDocumentMoniker": "TestSocketServer\\TestSocketServer.cpp",
-              "ToolTip": "C:\\Users\\Viktoria\\Desktop\\practice\\TestSocketServer\\TestSocketServer\\TestSocketServer.cpp",
-              "RelativeToolTip": "TestSocketServer\\TestSocketServer.cpp",
-              "ViewState": "AgIAAIkAAAAAAAAAAAAAAFoAAAAXAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\Viktoria\\Desktop\\practice\\TestSocketServer\\TestSocketServer\\TestSocketServer.cpp*",
+              "RelativeToolTip": "TestSocketServer\\TestSocketServer.cpp*",
+              "ViewState": "AgIAAEoAAAAAAAAAAAAAAFoAAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-02-05T22:51:53.857Z",
               "EditorCaption": ""

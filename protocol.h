@@ -1,23 +1,26 @@
-п»ї// protocol.h
+// protocol.h
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
 
 #include <cstdint>
+#include <iostream>
+#include <cstring>
 
-struct PersonData 
+using namespace std;
+
+struct PersonData
 {
-    char surname[64];      // С„Р°РјРёР»РёСЏ
-    char name[64];         // РёРјСЏ
-    char patronymic[64];   // РѕС‚С‡РµСЃС‚РІРѕ
-    uint8_t age;           // РІРѕР·СЂР°СЃС‚
-    uint16_t weight;       // РІРµСЃ
+    char surname[64];      // фамилия
+    char name[64];         // имя
+    char patronymic[64];   // отчество
+    uint8_t age;           // возраст
+    uint16_t weight;       // вес
 };
 
-const uint8_t DELIMITER = 0xAA;      // СЂР°Р·РґРµР»РёС‚РµР»СЊ РјРµР¶РґСѓ РїРѕР»СЏРјРё
-const uint8_t PACKET_START = 0x55;   // РјР°СЂРєРµСЂ РЅР°С‡Р°Р»Р° РїР°РєРµС‚Р°
-const uint8_t PACKET_END = 0xAA;     // РјР°СЂРєРµСЂ РєРѕРЅС†Р° РїР°РєРµС‚Р°
+const uint8_t PACKET_START = 0x55;   // маркер начала пакета
+const uint8_t PACKET_END = 0xAA;     // маркер конца пакета
 
-// С„СѓРЅРєС†РёСЏ РІС‹С‡РёСЃР»РµРЅРёСЏ РєРѕРЅС‚СЂРѕР»СЊРЅРѕР№ СЃСѓРјРјС‹
+// функция вычисления контрольной суммы
 uint8_t calculateCRC(const void* data, size_t size) 
 {
     const uint8_t* bytes = static_cast<const uint8_t*>(data);
@@ -29,70 +32,66 @@ uint8_t calculateCRC(const void* data, size_t size)
     return crc;
 }
 
-// РѕС‚РїСЂР°РІРєР° РѕРґРЅРѕРіРѕ РїРѕР»СЏ СЃ РєРѕРЅС‚РѕР»СЊРЅРѕР№ СЃСѓРјРјРѕР№ Рё СЂР°Р·РґРµР»РёС‚РµР»РµРј
-bool sendField(SOCKET socket, const void* data, size_t size)
-{
-    // РѕС‚РїСЂР°РІР»СЏРµРј РґР°РЅРЅС‹Рµ
-    if (send(socket, static_cast<const char*>(data), size, 0) != size) 
-    {
-        std::cerr << "Failed to send data" << std::endl;
-        return false;
-    }
+void sendPersonData(SOCKET socket, const PersonData& person) {
+    // 1. Байт начала пакета
+    send(socket, reinterpret_cast<const char*>(&PACKET_START), sizeof(PACKET_START), 0);
 
-    // РѕС‚РїСЂР°РІР»СЏРµРј РєРѕРЅС‚СЂРѕР»СЊРЅСѓСЋ СЃСѓРјРјСѓ
-    uint8_t crc = calculateCRC(data, size);
-    if (send(socket, reinterpret_cast<const char*>(&crc), sizeof(crc), 0) != sizeof(crc)) 
-    {
-        std::cerr << "Failed to send CRC" << std::endl;
-        return false;
-    }
+    // 2. Отправка всей структуры целиком
+    send(socket, reinterpret_cast<const char*>(&person), sizeof(PersonData), 0);
 
-    // РѕС‚РїСЂР°РІР»СЏРµРј СЂР°Р·РґРµР»РёС‚РµР»СЊ
-    if (send(socket, reinterpret_cast<const char*>(&DELIMITER), sizeof(DELIMITER), 0) != sizeof(DELIMITER)) 
-    {
-        std::cerr << "Failed to send delimiter" << std::endl;
-        return false;
-    }
+    // 3. Отправка контрольной суммы
+    uint8_t crc = calculateCRC(&person, sizeof(PersonData));
+    send(socket, reinterpret_cast<const char*>(&crc), sizeof(crc), 0);
 
-    return true;
+    // 4. Байт конца пакета
+    send(socket, reinterpret_cast<const char*>(&PACKET_END), sizeof(PACKET_END), 0);
 }
 
-bool receiveField(SOCKET socket, void* buffer, size_t size) 
-{
-    // РїСЂРёРµРј РґР°РЅРЅС‹С…
-    if (recv(socket, static_cast<char*>(buffer), size, 0) != size) 
+// принимает данные
+bool receivePersonData(SOCKET socket, PersonData& person) {
+    uint8_t startMarker;
+    if (recv(socket, reinterpret_cast<char*>(&startMarker), sizeof(startMarker), 0) != sizeof(startMarker))
     {
-        std::cerr << "Failed to receive data" << std::endl;
+        cerr << "Failed to receive start marker" << endl;
         return false;
     }
 
-    // РїСЂРёРµРј РєРѕРЅС‚СЂРѕР»СЊРЅРѕР№ СЃСѓРјРјС‹
+    if (startMarker != PACKET_START)
+    {
+        cerr << "Invalid start marker" << endl;
+        return false;
+    }
+
+    if (recv(socket, reinterpret_cast<char*>(&person), sizeof(PersonData), 0) != sizeof(PersonData))
+    {
+        cerr << "Failed to receive person data" << endl;
+        return false;
+    }
+
     uint8_t receivedCRC;
-    if (recv(socket, reinterpret_cast<char*>(&receivedCRC), sizeof(receivedCRC), 0) != sizeof(receivedCRC)) 
+    if (recv(socket, reinterpret_cast<char*>(&receivedCRC), sizeof(receivedCRC), 0) != sizeof(receivedCRC))
     {
-        std::cerr << "Failed to receive CRC" << std::endl;
+        cerr << "Failed to receive CRC" << endl;
         return false;
     }
 
-    // РїСЂРѕРІРµСЂРєР° РєРѕРЅС‚СЂРѕР»СЊРЅРѕР№ СЃСѓРјРјС‹
-    uint8_t calculatedCRC = calculateCRC(buffer, size);
+    uint8_t calculatedCRC = calculateCRC(&person, sizeof(PersonData));
     if (receivedCRC != calculatedCRC)
     {
-        std::cerr << "CRC mismatch" << std::endl;
+        cerr << "CRC mismatch" << endl;
         return false;
     }
 
-    // РїСЂРѕРІРµСЂРєР° СЂР°Р·РґРµР»РёС‚РµР»СЏ
-    uint8_t delimiter;
-    if (recv(socket, reinterpret_cast<char*>(&delimiter), sizeof(delimiter), 0) != sizeof(delimiter))
+    uint8_t endMarker;
+    if (recv(socket, reinterpret_cast<char*>(&endMarker), sizeof(endMarker), 0) != sizeof(endMarker))
     {
-        std::cerr << "Failed to receive delimiter" << std::endl;
+        cerr << "Failed to receive end marker" << endl;
         return false;
     }
 
-    if (delimiter != DELIMITER)
+    if (endMarker != PACKET_END)
     {
-        std::cerr << "Invalid delimiter" << std::endl;
+        cerr << "Invalid end marker" << endl;
         return false;
     }
 
